@@ -1,0 +1,28 @@
+{
+  "name": "scriptables",
+  "version": "1.0.0",
+  "description": "https://docs.scriptable.app/alert/",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Truth1984/scriptables.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Truth1984/scriptables/issues"
+  },
+  "homepage": "https://github.com/Truth1984/scriptables#readme",
+  "eslintConfig": {
+    "extends": "@scriptable-ios"
+  },
+  "devDependencies": {
+    "@scriptable-ios/eslint-config": "latest",
+    "@types/scriptable-ios": "latest",
+    "eslint": "latest"
+  }
+}
