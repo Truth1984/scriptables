@@ -4,5 +4,4 @@
 
 if (typeof require == "undefined") require = importModule;
 const u = require("./awadau");
-
-u.log("hello");
+const un = require("./universe");

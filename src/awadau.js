@@ -2,6 +2,8 @@
 // These must be at the very top of the file. Do not edit.
 // icon-color: teal; icon-glyph: vial;
 
+// Author: Awada.Z
+
 var u = {};
 u._global = {};
 u.ex = {};
@@ -130,12 +132,14 @@ u.typeCheck = (obj = undefined, type = undefined) => {
     case Object:
     case "obj":
     case "object":
-      return obj instanceof Object;
+      // shitty comparison
+      return typeof obj == "object";
     case Map:
     case "map":
     case "dictionary":
     case "dict":
-      return obj && obj.constructor == {}.constructor;
+      // seems like this is run in vm. Thus use shitty dirty comparison
+      return obj && obj.toString() == "[object Object]";
     case Function:
     case "func":
     case "function":
