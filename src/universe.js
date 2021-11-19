@@ -43,12 +43,12 @@ un._cachePrep = (cloud = false) => {
   return { uid, fm, cachePath: cacheDb, cacheDir };
 };
 
-un.cacheDeleteFile = () => {
-  let { fm, cacheDir } = un._cachePrep();
+un.cacheDeleteFile = (cloud = false) => {
+  let { fm, cacheDir } = un._cachePrep(cloud);
   fm.remove(cacheDir);
 };
 
-un.cacheSet = (pairs = {}, cloud = false) => {
+un.cacheAdd = (pairs = {}, cloud = false) => {
   let { fm, uid, cachePath } = un._cachePrep(cloud);
   pairs._id = un.uuid();
   pairs._date = new Date();
@@ -56,6 +56,40 @@ un.cacheSet = (pairs = {}, cloud = false) => {
 
   let content = JSON.parse(fm.readString(cachePath));
   content = u.arrayAdd(content, pairs);
+  content = u.jsonToString(content);
+  fm.writeString(cachePath, content);
+};
+
+un.cacheSet = (data = {}, identifier = {}, cloud = false) => {
+  let { fm, cachePath } = un._cachePrep(cloud);
+  let content = JSON.parse(fm.readString(cachePath));
+  data._id = un.uuid();
+  data._date = new Date();
+  data._device = uid;
+
+  content = content.map((item) => {
+    if (u.contains(item, identifier)) return data;
+    return item;
+  });
+  content = u.jsonToString(content);
+  fm.writeString(cachePath, content);
+};
+
+un.cacheMerge = (data = {}, identifier = {}, cloud = false) => {
+  let { fm, cachePath } = un._cachePrep(cloud);
+  let content = JSON.parse(fm.readString(cachePath));
+  content = content.map((item) => {
+    if (u.contains(item, identifier)) return u.mapMerge(item, data, { _update: new Date() });
+    return item;
+  });
+  content = u.jsonToString(content);
+  fm.writeString(cachePath, content);
+};
+
+un.cacheDelete = (identifier = {}, cloud = false) => {
+  let { fm, cachePath } = un._cachePrep(cloud);
+  let content = u.stringToJson(fm.readString(cachePath));
+  content = content.filter((item) => !u.contains(item, identifier));
   content = u.jsonToString(content);
   fm.writeString(cachePath, content);
 };
