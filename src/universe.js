@@ -108,4 +108,64 @@ un.cacheGetOne = (identifier = {}, cloud = false) => {
   for (let i of content) if (u.contains(i, identifier)) return i;
 };
 
+un.copyString = (string) => Pasteboard.copyString(string);
+
+un.copyImg = (img) => Pasteboard.copyImage(img);
+
+un.pasteString = () => Pasteboard.pasteString();
+
+/**
+ * @return {{c:?string}}
+ */
+un.pasteImg = () => Pasteboard.pasteImage();
+
+/**
+ *
+ * @param {0 | 1 | 2 | 3 | 4} vagueLevel lower is more accurate
+ * @return {Promise<{"verticalAccuracy":number, "altitude":number, "latitude":number, "longitude":number,"horizontalAccuracy":number}>}
+ */
+un.locationNum = async (vagueLevel = 0) => {
+  let loc = Location;
+  if (vagueLevel == 0) loc.setAccuracyToBest();
+  if (vagueLevel == 1) loc.setAccuracyToTenMeters();
+  if (vagueLevel == 2) loc.setAccuracyToHundredMeters();
+  if (vagueLevel == 3) loc.setAccuracyToKilometer();
+  if (vagueLevel > 3) loc.setAccuracyToThreeKilometers();
+  return loc.current();
+};
+
+/**
+ *
+ * @param {0 | 1 | 2 | 3 | 4} vagueLevel lower is more accurate
+ * @param {?string} locale Preferred locale to fetch information in as `Device.locale()`
+ */
+un.locationDetailFull = async (vagueLevel = 0, locale) => {
+  let locData = await un.locationNum(vagueLevel);
+  return Location.reverseGeocode(locData.latitude, locData.longitude);
+};
+
+/**
+ *
+ * @param {0 | 1 | 2 | 3 | 4} vagueLevel lower is more accurate
+ * @param {?string} locale Preferred locale to fetch information in as `Device.locale()`
+ * @return {Promise<{
+ "areasOfInterest":?string, "subThoroughfare":?string, "inlandWater":?string, 
+ "isoCountryCode":?string, "ocean":?string, "subLocality":?string, 
+ "country":?string, "thoroughfare":?string, "name":?string, 
+ "location":{"verticalAccuracy":number, "altitude":number, "latitude":number, 
+ "longitude":number,"horizontalAccuracy":number }, 
+ "subAdministrativeArea":?string, "postalCode":?string, 
+ "locality":?string, "administrativeArea":?string, "timeZone":?string ,
+ "postalAddress":{"postalCode":?string, "subAdministrativeArea":?string, "city":?string, 
+ "subLocality":?string, "state":?string, "street":?string, "country":?string, 
+ "isoCountryCode":?string} 
+ }>}
+ */
+un.locationDetail = async (vagueLevel = 0, locale) => {
+  let locData = await un.locationNum(vagueLevel);
+  let result = await Location.reverseGeocode(locData.latitude, locData.longitude);
+  result = result && result[0] ? result[0] : {};
+  return u.mapMerge(result, { location: locData });
+};
+
 module.exports = un;
