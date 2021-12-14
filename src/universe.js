@@ -20,10 +20,10 @@ un._cacheUid = () => {
 
 un.uuidMine = () => un._cacheUid();
 
-un._cachePrep = (cloud = false) => {
+un._cachePrep = (cloud = false, filename = "variable.json", content = "[]") => {
   let uid = un._cacheUid();
-  let cacheDir = "./scriptable-cache";
-  let cacheDb = "./scriptable-cache/variable.json";
+  let cacheDir = "./scriptable-cache/";
+  let cacheDb = cacheDir + filename;
   let fml = FileManager.local();
   let fmc = FileManager.iCloud();
   let fm = cloud ? fmc : fml;
@@ -32,19 +32,28 @@ un._cachePrep = (cloud = false) => {
     cacheDir = fmc.joinPath(fmc.documentsDirectory(), cacheDir);
     cacheDb = fmc.joinPath(fmc.documentsDirectory(), cacheDb);
     if (!fmc.isDirectory(cacheDir)) fmc.createDirectory(cacheDir);
-    if (!fmc.fileExists(cacheDb)) fmc.writeString(cacheDb, "[]");
+    if (!fmc.fileExists(cacheDb)) fmc.writeString(cacheDb, content);
   } else {
     cacheDir = fml.joinPath(fml.cacheDirectory(), cacheDir);
     cacheDb = fml.joinPath(fml.cacheDirectory(), cacheDb);
     if (!fml.isDirectory(cacheDir)) fml.createDirectory(cacheDir);
-    if (!fml.fileExists(cacheDb)) fml.writeString(cacheDb, "[]");
+    if (!fml.fileExists(cacheDb)) fml.writeString(cacheDb, content);
   }
 
   return { uid, fm, cachePath: cacheDb, cacheDir };
 };
 
+un._cachePrepConf = (cloud = false) => {
+  return un._cachePrep(cloud, "config.json", "{}");
+};
+
 un.cacheDeleteFile = (cloud = false) => {
   let { fm, cacheDir } = un._cachePrep(cloud);
+  fm.remove(cacheDir);
+};
+
+un.confDeleteFile = (cloud = false) => {
+  let { fm, cacheDir } = un._cachePrepConf(cloud);
   fm.remove(cacheDir);
 };
 
@@ -75,6 +84,14 @@ un.cacheSet = (data = {}, identifier = {}, cloud = false) => {
   fm.writeString(cachePath, content);
 };
 
+un.confSet = (data = {}, cloud = false) => {
+  let { fm, cachePath } = un._cachePrepConf(cloud);
+  let content = JSON.parse(fm.readString(cachePath));
+  content = u.mapMerge(content, data);
+  content = u.jsonToString(content);
+  fm.writeString(cachePath, content);
+};
+
 un.cacheMerge = (data = {}, identifier = {}, cloud = false) => {
   let { fm, cachePath } = un._cachePrep(cloud);
   let content = JSON.parse(fm.readString(cachePath));
@@ -94,6 +111,15 @@ un.cacheDelete = (identifier = {}, cloud = false) => {
   fm.writeString(cachePath, content);
 };
 
+un.confDelete = (keys = [], cloud = false) => {
+  let { fm, cachePath } = un._cachePrepConf(cloud);
+  let content = u.stringToJson(fm.readString(cachePath));
+  if (u.typeCheck(keys, "str")) keys = [keys];
+  keys.forEach((key) => delete content[key]);
+  content = u.jsonToString(content);
+  fm.writeString(cachePath, content);
+};
+
 un.cacheGet = (identifier = {}, cloud = false) => {
   let { fm, cachePath } = un._cachePrep(cloud);
   let content = u.stringToJson(fm.readString(cachePath));
@@ -102,10 +128,23 @@ un.cacheGet = (identifier = {}, cloud = false) => {
   });
 };
 
+un.confGet = (keys = [], cloud = false) => {
+  let { fm, cachePath } = un._cachePrepConf(cloud);
+  let content = u.stringToJson(fm.readString(cachePath));
+  if (u.typeCheck(keys, "str")) keys = [keys];
+  return keys.map((key) => content[key]);
+};
+
 un.cacheGetOne = (identifier = {}, cloud = false) => {
   let { fm, cachePath } = un._cachePrep(cloud);
   let content = u.stringToJson(fm.readString(cachePath));
   for (let i of content) if (u.contains(i, identifier)) return i;
+};
+
+un.confGetOne = (key = "", cloud = false) => {
+  let { fm, cachePath } = un._cachePrepConf(cloud);
+  let content = u.stringToJson(fm.readString(cachePath));
+  return content[key];
 };
 
 un.copyString = (string) => Pasteboard.copyString(string);
@@ -166,6 +205,14 @@ un.locationDetail = async (vagueLevel = 0, locale) => {
   let result = await Location.reverseGeocode(locData.latitude, locData.longitude);
   result = result && result[0] ? result[0] : {};
   return u.mapMerge(result, { location: locData });
+};
+
+un.speak = (string) => {
+  Speech.speak(string);
+};
+
+un.base64ToImg = (base64String) => {
+  return Image.fromData(Data.fromBase64String(base64String));
 };
 
 module.exports = un;
