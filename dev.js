@@ -21,4 +21,7 @@ task.add("copy-files", () => {
   return un.fileMove("./src", appPath, false, true, true);
 });
 
-task.runAuto().catch((e) => console.log("Error", e));
+task
+  .runAuto()
+  .then(() => console.log("Sync complete"))
+  .catch((e) => console.log("Error", e));
