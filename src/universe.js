@@ -215,4 +215,20 @@ un.base64ToImg = (base64String) => {
   return Image.fromData(Data.fromBase64String(base64String));
 };
 
+un.eval = async (func, ...args) => {
+  let wv = new WebView();
+  let prep = `
+    let myfunc = async () => {
+      let f = ${func.toString()};
+      return f(...${u.jsonToString(args)})
+    }
+    setTimeout(myfunc().then(data=>completion({ok:true,data})).catch(data=>completion({ok:false,data})))
+    `;
+  return wv.evaluateJavaScript(prep, true).then((result) => {
+    if (!result || u.isBad(result.ok)) return Promise.reject("Error: Data not retrieved");
+    if (result.ok) return result.data;
+    return Promise.reject(result.data);
+  });
+};
+
 module.exports = un;
