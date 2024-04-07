@@ -225,7 +225,8 @@ un.eval = async (func, ...args) => {
     setTimeout(myfunc().then(data=>completion({ok:true,data})).catch(data=>completion({ok:false,data})))
     `;
   return wv.evaluateJavaScript(prep, true).then((result) => {
-    if (!result || u.isBad(result.ok)) return Promise.reject("Error: Data not retrieved");
+    if (!result || u.isBad(result.ok))
+      return Promise.reject({ message: "Error: Data not retrieved", original: result });
     if (result.ok) return result.data;
     return Promise.reject(result.data);
   });
