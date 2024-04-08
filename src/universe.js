@@ -217,6 +217,7 @@ un.base64ToImg = (base64String) => {
 
 un.eval = async (func, ...args) => {
   let wv = new WebView();
+  await wv.loadURL("https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js");
   let prep = `
     let myfunc = async () => {
       let f = ${func.toString()};
@@ -230,6 +231,125 @@ un.eval = async (func, ...args) => {
     if (result.ok) return result.data;
     return Promise.reject(result.data);
   });
+};
+
+/**
+ * 
+ * example: un.AES({
+    key: "y2CRj6hjnaOBb9TZxa7Dz7TgkUui1e+kx16K/okP2ss=",
+    iv: "DBe1Ozb3aMRDn94Y",
+    toDecrypt: "nmtLp3sLvkEaPA1EF/juXld3TadMFlM3276nXw==",
+  })
+ *
+ * @param {{key:string, iv:string, toEncrypt:string, toDecrypt:string}} info
+ * @returns
+ */
+un.AES = (info = {}) => {
+  let f = async (key, iv, toEncrypt, toDecrypt) => {
+    const arrayBufferToBase64 = (buffer) => {
+      let binary = "";
+      const bytes = new window.Uint8Array(buffer);
+      const len = bytes.byteLength;
+
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+
+      return window.btoa(binary);
+    };
+
+    const base64ToArrayBuffer = (base64) => {
+      const binaryString = window.atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      return bytes.buffer;
+    };
+
+    let generateEncryptionKey = async () => {
+      let encryptKey = await window.crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, [
+        "encrypt",
+        "decrypt",
+      ]);
+      raw64Key = await window.crypto.subtle.exportKey("raw", encryptKey).then((key) => arrayBufferToBase64(key));
+      return encryptKey;
+    };
+
+    let encryptMessage = async (message) => {
+      let messageBuffer = new TextEncoder().encode(message);
+      let encryptedData = await window.crypto.subtle.encrypt(
+        {
+          name: "AES-GCM",
+          iv,
+        },
+        key,
+        messageBuffer
+      );
+      let encryptedMessage = new window.Uint8Array(encryptedData);
+
+      return arrayBufferToBase64(encryptedMessage);
+    };
+
+    let decryptMessage = async (encryptedMessage) => {
+      let encryptedData = base64ToArrayBuffer(encryptedMessage);
+      let decryptedData = await window.crypto.subtle.decrypt(
+        {
+          name: "AES-GCM",
+          iv: iv,
+        },
+        key,
+        encryptedData
+      );
+      let decryptedMessage = new window.TextDecoder().decode(decryptedData);
+
+      return decryptedMessage;
+    };
+
+    let raw64Key = key;
+    let raw64iv = iv;
+
+    if (key)
+      key = await window.crypto.subtle.importKey(
+        "raw",
+        base64ToArrayBuffer(key),
+        { name: "AES-GCM", length: 256 },
+        true,
+        ["encrypt", "decrypt"]
+      );
+    else key = await generateEncryptionKey();
+
+    if (iv) iv = base64ToArrayBuffer(iv);
+    else {
+      iv = await window.crypto.getRandomValues(new Uint8Array(12));
+      raw64iv = arrayBufferToBase64(iv);
+    }
+
+    if (toEncrypt) {
+      return {
+        key: raw64Key,
+        iv: raw64iv,
+        message: toEncrypt,
+        encrypt: true,
+        result: await encryptMessage(toEncrypt),
+      };
+    }
+
+    if (toDecrypt) {
+      return {
+        key: raw64Key,
+        iv: raw64iv,
+        message: toDecrypt,
+        encrypt: false,
+        result: await decryptMessage(toDecrypt),
+      };
+    }
+  };
+
+  return un.eval(f, info.key, info.iv, info.toEncrypt, info.toDecrypt);
 };
 
 module.exports = un;
