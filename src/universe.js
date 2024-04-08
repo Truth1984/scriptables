@@ -215,6 +215,20 @@ un.base64ToImg = (base64String) => {
   return Image.fromData(Data.fromBase64String(base64String));
 };
 
+un.paramEval = () => {
+  let param = args.plainTexts;
+  if (param != undefined) {
+    str = u.arrayToString(args.plainTexts, "");
+    pstr = u.stringReplace(str, { ["[\u201d]"]: '"', ["[\u2019]"]: "'" }, true, true);
+    return eval(pstr);
+  }
+};
+
+un.shortcutComplete = (value = "") => {
+  Script.setShortcutOutput(value);
+  Script.complete();
+};
+
 un.eval = async (func, ...args) => {
   let wv = new WebView();
   await wv.loadHTML("<html />", "https://localhost").catch((e) => ({ method: "loadUrl", error: e.toString() }));
