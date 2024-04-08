@@ -149,7 +149,7 @@ u.typeCheck = (obj = undefined, type = undefined) => {
       return obj instanceof Function && obj.constructor.name === "AsyncFunction";
     case Promise:
     case "promise":
-      return obj && obj.then instanceof Function;
+      return obj && typeof obj.then == "function";
     case Date:
     case "date":
       return obj instanceof Date;
@@ -273,7 +273,7 @@ u.toStr = (obj) => {
  */
 u.errorHandle = (error) => {
   if (u.typeCheck(error, "err")) return { message: error.message, stack: error.stack };
-  return u.toStr(error);
+  return error;
 };
 
 u.int = (number) => Number.parseInt(number);
