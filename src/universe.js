@@ -217,9 +217,7 @@ un.base64ToImg = (base64String) => {
 
 un.eval = async (func, ...args) => {
   let wv = new WebView();
-  await wv
-    .loadURL("https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js")
-    .catch((e) => ({ method: "loadUrl", error: e.toString() }));
+  await wv.loadHTML("<html />", "https://localhost").catch((e) => ({ method: "loadUrl", error: e.toString() }));
   let prep = `
     let myfunc = async () => {
       let f = ${func.toString()};
