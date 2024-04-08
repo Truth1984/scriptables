@@ -217,7 +217,9 @@ un.base64ToImg = (base64String) => {
 
 un.eval = async (func, ...args) => {
   let wv = new WebView();
-  await wv.loadURL("https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js");
+  await wv
+    .loadURL("https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js")
+    .catch((e) => ({ method: "loadUrl", error: e.toString() }));
   let prep = `
     let myfunc = async () => {
       let f = ${func.toString()};
@@ -227,7 +229,7 @@ un.eval = async (func, ...args) => {
     `;
   return wv.evaluateJavaScript(prep, true).then((result) => {
     if (!result || u.isBad(result.ok))
-      return Promise.reject({ message: "Error: Data not retrieved", original: result });
+      return Promise.reject({ message: "Error: Data not retrieved", original: result.toString() });
     if (result.ok) return result.data;
     return Promise.reject(result.data);
   });

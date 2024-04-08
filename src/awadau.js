@@ -273,7 +273,7 @@ u.toStr = (obj) => {
  */
 u.errorHandle = (error) => {
   if (u.typeCheck(error, "err")) return { message: error.message, stack: error.stack };
-  return error;
+  return u.toStr(error);
 };
 
 u.int = (number) => Number.parseInt(number);
