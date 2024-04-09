@@ -253,6 +253,40 @@ un.eval = async (func, ...args) => {
 };
 
 /**
+ *
+ * @param {string | {url:string, saveWeb: boolean, htmlPath: "./web.html"}} option url as default
+ * @param {} func
+ * @param  {...any} args
+ * @returns
+ */
+un.evalOnWeb = async (option = {}, func, ...args) => {
+  let wv = new WebView();
+  let { url, saveWeb, htmlPath } = u.typeCheck(option, "map") ? option : {};
+  if (u.typeCheck(option, "str")) url = option;
+  await wv.loadURL(u.url(url)).catch((e) => ({ method: "loadUrl", error: e.toString() }));
+  if (!htmlPath) htmlPath = "./web.html";
+  if (saveWeb) wv.getHTML().then((content) => FileManager.local().writeString(htmlPath, content));
+  let prep = `
+    let myfunc = async () => {
+      let f = ${func.toString()};
+      return f(...${u.jsonToString(args)})
+    }
+    setTimeout(myfunc().then(data=>completion({ok:true,data})).catch(e=>completion({ok:false,data:e.toString()})))
+    `;
+  return (
+    wv
+      .evaluateJavaScript(prep, true)
+      .then((result) => {
+        if (!result || u.isBad(result.ok)) return Promise.reject("Error: Data not retrieved");
+        if (result.ok) return result.data;
+        return Promise.reject(result.data);
+      })
+      // Ketchup for Scriptable spaghetti code
+      .catch(async (e) => Promise.reject((await e).toString()))
+  );
+};
+
+/**
  * 
  * example1: un.AES({
     key: "y2CRj6hjnaOBb9TZxa7Dz7TgkUui1e+kx16K/okP2ss=",

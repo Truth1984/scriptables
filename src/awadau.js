@@ -29,6 +29,29 @@ u.log = async (message, extra = {}, _section, severityThen = "INFO", severityCat
     .then((result) => console.log(u.jsonToString(result, "")));
 };
 
+u.consoleLog = (...obj) => {
+  function toStr(obj) {
+    if (obj == undefined || obj == null) return String(obj);
+    if (u.typeCheck(obj, "str") || u.typeCheck(obj, "promise") || u.typeCheck(obj, "class")) return obj.toString();
+    if (u.typeCheck(obj, "obj")) {
+      if (u.typeCheck(obj, "arr")) return "[" + obj.map(toStr).join(", ") + "]";
+      if (u.typeCheck(obj, "map"))
+        return (
+          "{" +
+          Array.from(Object.entries(obj))
+            .map(([key, value]) => `${toStr(key)}: ${toStr(value)}`)
+            .join(", ") +
+          "}"
+        );
+      return obj.constructor.name;
+    }
+    return obj;
+  }
+
+  obj = obj.map(toStr);
+  _scriptable_log(obj.join(" "));
+};
+
 u.contains = (origin, item) => {
   if (origin === undefined || item === undefined) return false;
   let simpleCheck = (obj) => {
