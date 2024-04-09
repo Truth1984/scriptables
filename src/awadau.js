@@ -32,7 +32,8 @@ u.log = async (message, extra = {}, _section, severityThen = "INFO", severityCat
 u.consoleLog = (...obj) => {
   function toStr(obj) {
     if (obj == undefined || obj == null) return String(obj);
-    if (u.typeCheck(obj, "str") || u.typeCheck(obj, "promise") || u.typeCheck(obj, "class")) return obj.toString();
+    if (u.typeCheck(obj, "str") || u.typeCheck(obj, "promise") || u.typeCheck(obj, "class") || u.typeCheck(obj, "err"))
+      return obj.toString();
     if (u.typeCheck(obj, "obj")) {
       if (u.typeCheck(obj, "arr")) return "[" + obj.map(toStr).join(", ") + "]";
       if (u.typeCheck(obj, "map"))
@@ -182,7 +183,8 @@ u.typeCheck = (obj = undefined, type = undefined) => {
       return obj instanceof RegExp;
     case "err":
     case "error":
-      return obj instanceof Error;
+      // scriptable error
+      return Object.prototype.toString.call(obj) == "[object Error]";
     case "class":
       return typeof obj === "function" && /^\s*class\s+/.test(obj.toString());
     default:
