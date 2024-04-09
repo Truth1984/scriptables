@@ -32,6 +32,7 @@ u.log = async (message, extra = {}, _section, severityThen = "INFO", severityCat
 u.consoleLog = (...obj) => {
   function toStr(obj) {
     if (obj == undefined || obj == null) return String(obj);
+    if (u.typeCheck(obj, "err")) return "---\n" + obj.toString() + obj.stack.toString() + "\n---\n";
     if (u.typeCheck(obj, "str") || u.typeCheck(obj, "promise") || u.typeCheck(obj, "class") || u.typeCheck(obj, "err"))
       return obj.toString();
     if (u.typeCheck(obj, "obj")) {
