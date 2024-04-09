@@ -237,26 +237,33 @@ un.eval = async (func, ...args) => {
       let f = ${func.toString()};
       return f(...${u.jsonToString(args)})
     }
-    setTimeout(myfunc().then(data=>completion({ok:true,data:data?data:""})).catch(e=>completion({ok:false,data:e.toString()})))
+    setTimeout(myfunc().then(data=>completion({ok:true,data})).catch(e=>completion({ok:false,data:e.toString()})))
     `;
-  return wv.evaluateJavaScript(prep, true).then((result) => {
-    if (!result || u.isBad(result.ok))
-      return Promise.reject({ message: "Error: Data not retrieved", original: result.toString() });
-    if (result.ok) return result.data;
-    return Promise.reject(result.data);
-  });
+  return (
+    wv
+      .evaluateJavaScript(prep, true)
+      .then((result) => {
+        if (!result || u.isBad(result.ok)) return Promise.reject("Error: Data not retrieved");
+        if (result.ok) return result.data;
+        return Promise.reject(result.data);
+      })
+      // Ketchup for Scriptable spaghetti code
+      .catch(async (e) => Promise.reject((await e).toString()))
+  );
 };
 
 /**
  * 
- * example: un.AES({
+ * example1: un.AES({
     key: "y2CRj6hjnaOBb9TZxa7Dz7TgkUui1e+kx16K/okP2ss=",
     iv: "DBe1Ozb3aMRDn94Y",
     toDecrypt: "nmtLp3sLvkEaPA1EF/juXld3TadMFlM3276nXw==",
   })
  *
+ * example2: un.AES({toEncrypt:"greetings"})
+ * 
  * @param {{key:string, iv:string, toEncrypt:string, toDecrypt:string}} info
- * @returns
+ * @returns {Promise<{key:string, iv:string, message:string, encrypt:boolean, result:string}>}
  */
 un.AES = (info = {}) => {
   let f = async (key, iv, toEncrypt, toDecrypt) => {
