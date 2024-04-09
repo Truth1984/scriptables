@@ -237,7 +237,7 @@ un.eval = async (func, ...args) => {
       let f = ${func.toString()};
       return f(...${u.jsonToString(args)})
     }
-    setTimeout(myfunc().then(data=>completion({ok:true,data})).catch(e=>completion({ok:false,data:e.toString()})))
+    setTimeout(myfunc().then(data=>completion({ok:true,data:data?data:""})).catch(e=>completion({ok:false,data:e.toString()})))
     `;
   return wv.evaluateJavaScript(prep, true).then((result) => {
     if (!result || u.isBad(result.ok))
