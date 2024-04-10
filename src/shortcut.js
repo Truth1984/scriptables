@@ -5,6 +5,7 @@
 if (typeof require == "undefined") require = importModule;
 const u = require("./awadau");
 const un = require("./universe");
+console.log = u.consoleLog;
 
 let result = un.paramEval();
 Promise.resolve(result).then((result) => un.shortcutComplete(result ? result : ""));

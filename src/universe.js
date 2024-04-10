@@ -6,6 +6,7 @@
 
 if (typeof require == "undefined") require = importModule;
 const u = require("./awadau");
+console.log = u.consoleLog;
 
 let un = {};
 
@@ -295,6 +296,8 @@ un.evalOnWeb = async (option = {}, func, ...args) => {
   })
  *
  * example2: un.AES({toEncrypt:"greetings"})
+ * 
+ * use const { webcrypto } = require("crypto"); const { TextDecoder } = require("util"); on latest node version
  * 
  * @param {{key:string, iv:string, toEncrypt:string, toDecrypt:string}} info
  * @returns {Promise<{key:string, iv:string, message:string, encrypt:boolean, result:string}>}
