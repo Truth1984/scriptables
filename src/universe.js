@@ -133,7 +133,8 @@ un.confGet = (keys = [], cloud = false) => {
   let { fm, cachePath } = un._cachePrepConf(cloud);
   let content = u.stringToJson(fm.readString(cachePath));
   if (u.typeCheck(keys, "str")) keys = [keys];
-  return keys.map((key) => content[key]);
+  if (u.equal(keys, [])) return content;
+  return u.mapGet(content, ...keys);
 };
 
 un.cacheGetOne = (identifier = {}, cloud = false) => {
