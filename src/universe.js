@@ -51,11 +51,13 @@ un._cachePrepConf = (cloud = false) => {
 un.cacheDeleteFile = (cloud = false) => {
   let { fm, cacheDir } = un._cachePrep(cloud);
   fm.remove(cacheDir);
+  u.log(`Delete complete, cloud = ${cloud}`);
 };
 
 un.confDeleteFile = (cloud = false) => {
   let { fm, cacheDir } = un._cachePrepConf(cloud);
   fm.remove(cacheDir);
+  u.log(`Delete complete, cloud = ${cloud}`);
 };
 
 un.cacheAdd = (pairs = {}, cloud = false) => {
@@ -222,7 +224,8 @@ un.paramEval = () => {
   if (param != undefined) {
     str = u.arrayToString(args.plainTexts, "");
     pstr = u.stringReplace(str, { ["[\u201d]"]: '"', ["[\u2019]"]: "'" }, true, true);
-    return eval(pstr);
+    configStr = `const config = un.confGet([], true);`;
+    return eval(configStr + pstr);
   }
 };
 

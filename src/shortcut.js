@@ -8,4 +8,5 @@ const un = require("./universe");
 console.log = u.consoleLog;
 
 let result = un.paramEval();
+// config={}, use un.confSet({},true) to set value
 Promise.resolve(result).then((result) => un.shortcutComplete(result ? result : ""));
