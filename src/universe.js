@@ -21,7 +21,7 @@ un._cacheUid = () => {
 
 un.uuidMine = () => un._cacheUid();
 
-un._cachePrep = (cloud = false, filename = "variable.json", content = "[]") => {
+un._cachePrepConf = (cloud = false, filename = "config.json", content = "{}") => {
   let uid = un._cacheUid();
   let cacheDir = "./scriptable-cache/";
   let cacheDb = cacheDir + filename;
@@ -44,72 +44,16 @@ un._cachePrep = (cloud = false, filename = "variable.json", content = "[]") => {
   return { uid, fm, cachePath: cacheDb, cacheDir };
 };
 
-un._cachePrepConf = (cloud = false) => {
-  return un._cachePrep(cloud, "config.json", "{}");
-};
-
-un.cacheDeleteFile = (cloud = false) => {
-  let { fm, cacheDir } = un._cachePrep(cloud);
-  fm.remove(cacheDir);
-  u.log(`Delete complete, cloud = ${cloud}`);
-};
-
 un.confDeleteFile = (cloud = false) => {
   let { fm, cacheDir } = un._cachePrepConf(cloud);
   fm.remove(cacheDir);
   u.log(`Delete complete, cloud = ${cloud}`);
 };
 
-un.cacheAdd = (pairs = {}, cloud = false) => {
-  let { fm, uid, cachePath } = un._cachePrep(cloud);
-  pairs._id = un.uuid();
-  pairs._date = new Date();
-  pairs._device = uid;
-
-  let content = JSON.parse(fm.readString(cachePath));
-  content = u.arrayAdd(content, pairs);
-  content = u.jsonToString(content);
-  fm.writeString(cachePath, content);
-};
-
-un.cacheSet = (data = {}, identifier = {}, cloud = false) => {
-  let { fm, cachePath } = un._cachePrep(cloud);
-  let content = JSON.parse(fm.readString(cachePath));
-  data._id = un.uuid();
-  data._date = new Date();
-  data._device = uid;
-
-  content = content.map((item) => {
-    if (u.contains(item, identifier)) return data;
-    return item;
-  });
-  content = u.jsonToString(content);
-  fm.writeString(cachePath, content);
-};
-
 un.confSet = (data = {}, cloud = false) => {
   let { fm, cachePath } = un._cachePrepConf(cloud);
   let content = JSON.parse(fm.readString(cachePath));
   content = u.mapMerge(content, data);
-  content = u.jsonToString(content);
-  fm.writeString(cachePath, content);
-};
-
-un.cacheMerge = (data = {}, identifier = {}, cloud = false) => {
-  let { fm, cachePath } = un._cachePrep(cloud);
-  let content = JSON.parse(fm.readString(cachePath));
-  content = content.map((item) => {
-    if (u.contains(item, identifier)) return u.mapMerge(item, data, { _update: new Date() });
-    return item;
-  });
-  content = u.jsonToString(content);
-  fm.writeString(cachePath, content);
-};
-
-un.cacheDelete = (identifier = {}, cloud = false) => {
-  let { fm, cachePath } = un._cachePrep(cloud);
-  let content = u.stringToJson(fm.readString(cachePath));
-  content = content.filter((item) => !u.contains(item, identifier));
   content = u.jsonToString(content);
   fm.writeString(cachePath, content);
 };
@@ -123,26 +67,12 @@ un.confDelete = (keys = [], cloud = false) => {
   fm.writeString(cachePath, content);
 };
 
-un.cacheGet = (identifier = {}, cloud = false) => {
-  let { fm, cachePath } = un._cachePrep(cloud);
-  let content = u.stringToJson(fm.readString(cachePath));
-  return content.filter((item) => {
-    if (u.contains(item, identifier)) return item;
-  });
-};
-
 un.confGet = (keys = [], cloud = false) => {
   let { fm, cachePath } = un._cachePrepConf(cloud);
   let content = u.stringToJson(fm.readString(cachePath));
   if (u.typeCheck(keys, "str")) keys = [keys];
   if (u.equal(keys, [])) return content;
   return u.mapGet(content, ...keys);
-};
-
-un.cacheGetOne = (identifier = {}, cloud = false) => {
-  let { fm, cachePath } = un._cachePrep(cloud);
-  let content = u.stringToJson(fm.readString(cachePath));
-  for (let i of content) if (u.contains(i, identifier)) return i;
 };
 
 un.confGetOne = (key = "", cloud = false) => {
